@@ -22,17 +22,19 @@ twilio_accounts.accounts.forEach(account => {
 })
 
 async function voice_call() {
-    twilio_accounts.accounts.forEach(async account => {
-        const twilio_client = account.client
-        ret = await twilio_client.calls
-            .create({
-                url: twilio_callback_url,
-                to: account.TWILIO_TO,
-                from: account.TWILIO_FROM
-            })
-        console.log("called '" + twilio_to + "' with sid: " + ret.sid + "for account: " + account.name)
-        //   .then(call => console.log(call.sid));
-    })
+    if (twilio_accounts && twilio_accounts.accounts) {
+        twilio_accounts.accounts.forEach(async account => {
+            const twilio_client = account.client
+            ret = await twilio_client.calls
+                .create({
+                    url: twilio_callback_url,
+                    to: account.TWILIO_TO,
+                    from: account.TWILIO_FROM
+                })
+            console.log("called '" + account.TWILIO_TO + "' with sid: " + ret.sid + "for account: " + account.name)
+            //   .then(call => console.log(call.sid));
+        })
+    }
 }
 
 async function send_slack(message) {
@@ -81,6 +83,7 @@ pubSubSubscriber.on("feed", function (data) {
     // console.log(data.feed.toString())
     var jsonObj = convert.xml2js(data.feed.toString(), { compact: true })
     if (jsonObj.feed.entry) {
+        db.reload();
         try {
             db.getData(`/${jsonObj.feed.entry.id._text}`)
         }
